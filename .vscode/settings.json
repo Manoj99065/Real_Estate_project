@@ -1,0 +1,26 @@
+{
+  "editor.formatOnPaste": false,
+  "editor.formatOnSave": false,
+  "editor.formatOnType": false,
+
+  "editor.suggest.insertMode": "replace",
+  "css.validate": false,
+  "less.validate": false,
+  "scss.validate": false,
+
+  "[javascript]": {
+    "editor.formatOnSave": false,
+    "editor.formatOnPaste": false,
+    "editor.formatOnType": false,
+    "editor.acceptSuggestionOnCommitCharacter": false
+  },
+  "[javascriptreact]": {
+    "editor.formatOnSave": false,
+    "editor.formatOnPaste": false,
+    "editor.formatOnType": false
+  },
+  "workbench.settings.useSplitJSON": false,
+  "files.associations": {
+    "*.css": "tailwindcss"
+}
+}
