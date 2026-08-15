@@ -3,8 +3,11 @@ const getApiUrl = () => {
     const hostname = window.location.hostname;
 
     // If on your PC browser, use localhost
+    // if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    //     return 'http://localhost:5000';
+    // }
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        return 'http://localhost:5000';
+        return 'https://real-estate-project-ivvr.onrender.com';
     }
 
     // If inside the Android Emulator, use the special bridge IP to connect back to your PC
