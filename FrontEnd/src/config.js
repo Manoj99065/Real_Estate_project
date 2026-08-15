@@ -7,12 +7,18 @@
 //     //     return 'http://localhost:5000';
 //     // }
 //     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-//         return 'https://real-estate-project-ivvr.onrender.com';
+//         return 'http://localhost:5000';
 //     }
 
 //     // If inside the Android Emulator, use the special bridge IP to connect back to your PC
 //     return 'http://10.0.2.2:5000';
 // };
+
+// const API_URL = getApiUrl();
+// export default API_URL;
+
+
+
 
 const getApiUrl = () => {
     const hostname = window.location.hostname;
@@ -33,7 +39,4 @@ const getApiUrl = () => {
 
 const API_URL = getApiUrl();
 
-export default API_URL;
-
-const API_URL = getApiUrl();
 export default API_URL;
