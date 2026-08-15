@@ -1,6 +1,6 @@
 // ✅ Correct imports
 import User from "../models/user.model.js"; // ← ensure this file exists
-import uploadToCloudinary from "../utils/uploadToCloudinary.js"; // ← default import
+import uploadToCloudinary from "../utils/UploadToCloudinary.js"; // ← default import
 
 // Get Profile
 export const getProfile = async(req, res) => {
