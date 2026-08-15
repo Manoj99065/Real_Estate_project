@@ -56,10 +56,22 @@ const AdminInquiries = () => {
     fetchData();
   }, [token]);
 
+  // const handleResolve = async (id) => {
+  //   try {
+  //     await axios.patch(
+  //       `${API_URL}/api/support/admin/${id}/status`,
+  //       { status: 'Resolved' },
+  //       { headers: { Authorization: `Bearer ${token}` } }
+  //     );
+  //     fetchData();
+  //   } catch (err) {
+  //     alert('Failed to resolve inquiry.');
+  //   }
+  // };
   const handleResolve = async (id) => {
     try {
-      await axios.patch(
-        `${API_URL}/api/support/admin/${id}/status`,
+      await axios.put(
+        `${API_URL}/api/support/admin/update/${id}`,   // 👈 SIRF YAHAN CHANGE
         { status: 'Resolved' },
         { headers: { Authorization: `Bearer ${token}` } }
       );

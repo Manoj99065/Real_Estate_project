@@ -213,36 +213,94 @@ export const forgotPassword = async(req, res) => {
 };
 
 // ---------- RESET PASSWORD ----------
+// export const resetPassword = async(req, res) => {
+//     try {
+//         const { token } = req.params;
+//         const { password } = req.body;
+
+//         const resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex');
+
+//         const user = await User.findOne({
+//             resetPasswordToken,
+//             resetPasswordExpire: { $gt: Date.now() },
+//         });
+
+//         if (!user) {
+//             return res.status(400).json({
+//                 message: 'Invalid or expired password reset token',
+//                 success: false,
+//             });
+//         }
+
+//         user.password = await bcrypt.hash(password, 10);
+//         user.resetPasswordToken = undefined;
+//         user.resetPasswordExpire = undefined;
+//         await user.save();
+
+//         res.status(200).json({
+//             message: 'Password updated successfully',
+//             success: true,
+//         });
+//     } catch (error) {
+//         console.error('Reset password error:', error);
+//         res.status(500).json({ message: error.message, success: false });
+//     }
+// };
 export const resetPassword = async(req, res) => {
     try {
         const { token } = req.params;
         const { password } = req.body;
 
-        const resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex');
+        console.log("🔑 Received token:", token);
 
+        const resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex');
+        console.log("🔐 Hashed token:", resetPasswordToken);
+        console.log("⏰ Current time:", Date.now());
+
+        // 👇 1. User search
         const user = await User.findOne({
             resetPasswordToken,
             resetPasswordExpire: { $gt: Date.now() },
         });
 
+        console.log("👤 User found:", user ? user.email : "NOT FOUND");
+
+        // 👇 2. Agar user nahi mila
         if (!user) {
+            console.log("❌ User NOT FOUND - returning error");
             return res.status(400).json({
                 message: 'Invalid or expired password reset token',
                 success: false,
             });
         }
 
-        user.password = await bcrypt.hash(password, 10);
+        console.log("✅ User found, updating password...");
+
+        // 👇 3. Password hash karo
+        const hashedPassword = await bcrypt.hash(password, 10);
+        console.log("🔒 Password hashed successfully");
+
+        // 👇 4. User update karo
+        user.password = hashedPassword;
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
-        await user.save();
 
-        res.status(200).json({
+        // 👇 5. Save karo
+        await user.save();
+        console.log("💾 User saved successfully");
+
+        // 👇 6. Success response
+        console.log("✅ Password reset successful!");
+        return res.status(200).json({
             message: 'Password updated successfully',
             success: true,
         });
+
     } catch (error) {
-        console.error('Reset password error:', error);
-        res.status(500).json({ message: error.message, success: false });
+        console.error('❌ Reset password error:', error);
+        return res.status(500).json({
+            message: error.message || 'Server error',
+            success: false,
+        });
     }
 };

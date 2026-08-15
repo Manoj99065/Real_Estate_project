@@ -1,6 +1,7 @@
 
 
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import { propertiesStyles as s } from "../../assets/dummyStyles";
 import { useAuth } from '../../context/AuthContext';
@@ -11,7 +12,8 @@ import {
   HiX,
   HiViewGrid,
   HiViewList,
-  HiAdjustments
+  HiAdjustments,
+  HiMenu,
 } from "react-icons/hi";
 import axios from "axios";
 import API_URL from "../../config";
@@ -30,7 +32,7 @@ const Properties = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState("grid");
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(false); // ✅ Single state for all screens
 
   const [filters, setFilters] = useState({
     city: "",
@@ -138,6 +140,7 @@ const Properties = () => {
       setProperties(res.data.properties || []);
       setError(null);
     } catch (err) {
+      console.error("Fetch error:", err);
       setError("Failed to load properties. Please try again later.");
       setProperties([]);
     } finally {
@@ -193,6 +196,7 @@ const Properties = () => {
   const applyFilters = () => {
     if (fetchTimer.current) clearTimeout(fetchTimer.current);
     fetchProperties(filters);
+    setShowFilters(false); // ✅ Filters apply karne ke baad close
   };
 
   const resetFilters = () => {
@@ -209,35 +213,62 @@ const Properties = () => {
     setFilters(reset);
     navigate("/properties");
     fetchProperties(reset);
+    setShowFilters(false); // ✅ Reset ke baad close
   };
 
+  // ✅ Filter Button Component
+  const FilterToggleButton = () => (
+    <button
+      onClick={() => setShowFilters(!showFilters)}
+      className="fixed left-4 z-40 lg:hidden bg-emerald-600 text-white p-3 rounded-full shadow-lg hover:bg-emerald-700 transition-colors"
+      style={{ top: 'calc(80px + 1cm)' }}
+      aria-label="Toggle Filters"
+    >
+      <HiFilter size={22} />
+      {filters.city || filters.propertyType.length > 0 || filters.bhk ? (
+        <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">
+          !
+        </span>
+      ) : null}
+    </button>
+  );
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
       <Navbar />
 
-      {/* <div className="flex-1 overflow-hidden pt-20 lg:pt-24"> */}
-      <div className="flex-1 overflow-hidden pt-20 lg:pt-24 mt-[0.5cm]">
+      {/* ✅ Filter Toggle Button - Always visible on mobile */}
+      <FilterToggleButton />
 
+      <div className="flex-1 overflow-hidden pt-20 lg:pt-24 mt-[0.5cm]">
         <div className="container mx-auto px-4 lg:px-6 h-full py-4">
 
-          {/* Mobile filter button */}
-          <div className="mb-4 lg:hidden">
-            <button
-              onClick={() => setShowMobileFilters(true)}
-              className="w-full flex justify-center gap-3 bg-white py-3 rounded-xl border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
-            >
-              <HiFilter size={20} /> Show Filter & Search
-            </button>
-          </div>
-
-          {/* Flex container – full height */}
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 h-full">
 
-            {/* ✅ STATIC SIDEBAR – pushed left by -ml-4 */}
-            <aside className="w-full lg:w-72 xl:w-80 flex-shrink-0 lg:sticky lg:top-0 self-start h-full -ml-20">
-              <div className="bg-white rounded-xl shadow-sm border p-4 lg:p-5 h-full overflow-y-auto">
-                <div className="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 pb-2">
+            {/* ✅ FILTER SIDEBAR - Slide in on mobile, static on desktop */}
+            <aside
+              className={`
+                fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out
+                lg:relative lg:translate-x-0 lg:w-72 xl:w-80 lg:flex-shrink-0 lg:shadow-none
+                ${showFilters ? 'translate-x-0' : '-translate-x-full'}
+              `}
+            >
+              <div className="h-full overflow-y-auto p-4 lg:p-5">
+                {/* Close button - Mobile only */}
+                <div className="flex justify-between items-center mb-4 lg:hidden">
+                  <h2 className="text-lg font-bold flex items-center gap-2">
+                    <HiFilter className="text-emerald-600" />
+                    Filters
+                  </h2>
+                  <button
+                    onClick={() => setShowFilters(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full"
+                  >
+                    <HiX size={22} />
+                  </button>
+                </div>
+
+                <div className="flex justify-between items-center mb-4 hidden const FilterTolg:flex">
                   <h2 className="text-lg font-bold flex items-center gap-2">
                     <HiFilter className="text-emerald-600" />
                     Filters
@@ -250,7 +281,7 @@ const Properties = () => {
                   </button>
                 </div>
 
-                {/* ---- all filter fields (unchanged) ---- */}
+                {/* ---- Filter Fields ---- */}
                 {/* Location */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
@@ -361,23 +392,17 @@ const Properties = () => {
               </div>
             </aside>
 
-            {/* Mobile overlay – unchanged */}
-            {showMobileFilters && (
-              <>
-                <div
-                  className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-                  onClick={() => setShowMobileFilters(false)}
-                />
-                <div className="fixed inset-y-0 left-0 w-80 bg-white z-50 shadow-xl p-6 overflow-y-auto lg:hidden">
-                  {/* Mobile filter content – copy your existing code here */}
-                  {/* (I'm omitting it for brevity, but keep it as you have) */}
-                </div>
-              </>
+            {/* ✅ Overlay - When filters are open on mobile */}
+            {showFilters && (
+              <div
+                className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                onClick={() => setShowFilters(false)}
+              />
             )}
 
-            {/* Main Content – scrollable properties */}
+            {/* Main Content */}
             <main className="flex-1 h-full overflow-y-auto pb-4">
-              {/* Results Header – now scrolls with the page (no sticky) */}
+              {/* Results Header */}
               <div className="flex items-center justify-between mb-4 flex-wrap gap-2 bg-white p-3 rounded-xl shadow-sm border">
                 <span className="text-gray-600 text-sm">
                   Showing{" "}
@@ -387,6 +412,14 @@ const Properties = () => {
                   Properties
                 </span>
                 <div className="flex items-center gap-3">
+                  {/* ✅ Filter button inside header - for desktop and mobile */}
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="lg:hidden flex items-center gap-1 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition text-sm font-medium"
+                  >
+                    <HiFilter size={16} />
+                    Filter
+                  </button>
                   <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
                     <button
                       onClick={() => setViewMode("grid")}
@@ -417,7 +450,7 @@ const Properties = () => {
                 </div>
               </div>
 
-              {/* Properties Grid – unchanged */}
+              {/* Properties Grid */}
               {loading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                   {[1, 2, 3, 4, 5, 6].map((i) => (

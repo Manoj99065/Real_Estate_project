@@ -1,6 +1,7 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import 'dotenv/config';
+
 import http from 'http';
 import { Server } from 'socket.io';
 import { connectDB } from './config/db.js';
@@ -15,6 +16,8 @@ import adminRouter from './routes/admin.routes.js';
 import purchaseRoutes from './routes/purchase.routes.js';
 import newsletterRoutes from './routes/newsletter.routes.js';
 import supportRoutes from './routes/support.routes.js';
+
+
 
 
 const app = express();

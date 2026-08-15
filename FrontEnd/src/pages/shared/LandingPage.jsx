@@ -1,4 +1,6 @@
 
+
+
 // import React, { useEffect, useState } from "react";
 // import { landingPageStyles as s } from "../../assets/dummyStyles";
 // import Navbar from "../../components/common/Navbar";
@@ -40,6 +42,11 @@
 //   });
 
 //   const [wishlistedIds, setWishlistedIds] = useState([]);
+
+//   // ✅ Newsletter state
+//   const [newsletterEmail, setNewsletterEmail] = useState("");
+//   const [newsletterLoading, setNewsletterLoading] = useState(false);
+//   const [newsletterMessage, setNewsletterMessage] = useState({ text: "", type: "" });
 
 //   useEffect(() => {
 //     fetchProperties();
@@ -91,63 +98,48 @@
 //   // const fetchCounts = async () => {
 //   //   try {
 //   //     const res = await axios.get(`${API_URL}/api/property/counts`);
-//   //     if (res.data?.success) {
-//   //       setPropertyCounts(res.data.counts);
-//   //     }
+//   //     let data = res.data;
+//   //     if (data.success && data.counts) data = data.counts;
+//   //     else if (data.data) data = data.data;
+
+//   //     setPropertyCounts({
+//   //       flat: data.flat || data.Flat || 0,
+//   //       villa: data.villa || data.Villa || 0,
+//   //       penthouse: data.penthouse || data.Penthouse || 0,
+//   //       commercial: data.commercial || data.Commercial || 0,
+//   //     });
 //   //   } catch (err) {
 //   //     console.error("Failed to fetch property counts:", err);
 //   //   }
 //   // };
 
-
 //   const fetchCounts = async () => {
 //     try {
-//       const res = await axios.get(`${API_URL}/api/property/counts`);
-//       console.log("📡 Raw counts response:", res.data);
+//       const res = await axios.get(`${API_URL}/api/property`);
+//       const allProperties = res.data.properties || res.data || [];
 
-//       let data = res.data;
-//       // Handle wrapped responses
-//       if (data.success && data.counts) data = data.counts;
-//       else if (data.data) data = data.data;
+//       const counts = {
+//         flat: allProperties.filter(p =>
+//           p.category && p.category.toLowerCase().includes('flat')
+//         ).length,
+//         villa: allProperties.filter(p =>
+//           p.category && p.category.toLowerCase().includes('villa')
+//         ).length,
+//         penthouse: allProperties.filter(p =>
+//           p.category && p.category.toLowerCase().includes('penthouse')
+//         ).length,
+//         commercial: allProperties.filter(p =>
+//           p.category && p.category.toLowerCase().includes('commercial')
+//         ).length,
+//       };
 
-//       // Handle case-insensitive keys and fallback safely to 0
-//       setPropertyCounts({
-//         flat: data.flat || data.Flat || 0,
-//         villa: data.villa || data.Villa || 0,
-//         penthouse: data.penthouse || data.Penthouse || 0,
-//         commercial: data.commercial || data.Commercial || 0,
-//       });
+//       setPropertyCounts(counts);
 //     } catch (err) {
 //       console.error("Failed to fetch property counts:", err);
 //     }
 //   };
 
 //   // ---------- Fetch properties ----------
-//   // const fetchProperties = async (search = "") => {
-//   //   try {
-//   //     setLoading(true);
-//   //     let url = `${API_URL}/api/property`;
-//   //     if (search) {
-//   //       url += `?city=${encodeURIComponent(search)}`;
-//   //     }
-//   //     console.log('Fetching:', url);
-
-//   //     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-//   //     const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-//   //     const res = await axios.get(url, { headers });
-//   //     const data = res.data.properties || res.data || [];
-//   //     setProperties(Array.isArray(data) ? data : []);
-//   //     setError(null);
-//   //   } catch (err) {
-//   //     console.error("Fetch error:", err);
-//   //     setError("Failed to load properties. Please try again.");
-//   //     setProperties([]);
-//   //   } finally {
-//   //     setLoading(false);
-//   //   }
-//   // };
-
 //   const fetchProperties = async (search = "") => {
 //     try {
 //       setLoading(true);
@@ -155,16 +147,11 @@
 //       if (search) {
 //         url += `?city=${encodeURIComponent(search)}`;
 //       }
-//       console.log('Fetching:', url);
 
 //       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 //       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
 //       const res = await axios.get(url, { headers });
-
-//       // ✅ ADD THIS LINE – logs the first property
-//       console.log('First property data:', res.data.properties?.[0] || res.data[0]);
-
 //       const data = res.data.properties || res.data || [];
 //       setProperties(Array.isArray(data) ? data : []);
 //       setError(null);
@@ -176,6 +163,7 @@
 //       setLoading(false);
 //     }
 //   };
+
 //   // ---------- Search handler ----------
 //   const handleSearch = (e) => {
 //     e.preventDefault();
@@ -185,9 +173,46 @@
 //     navigate(`/properties?${params.toString()}`);
 //   };
 
+//   // ---------- ✅ Newsletter Subscription Handler ----------
+//   const handleNewsletterSubmit = async (e) => {
+//     e.preventDefault();
+
+//     if (!newsletterEmail) {
+//       setNewsletterMessage({ text: 'Please enter your email address.', type: 'error' });
+//       return;
+//     }
+
+//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+//     if (!emailRegex.test(newsletterEmail)) {
+//       setNewsletterMessage({ text: 'Please enter a valid email address.', type: 'error' });
+//       return;
+//     }
+
+//     setNewsletterLoading(true);
+//     setNewsletterMessage({ text: '', type: '' });
+
+//     try {
+//       const response = await axios.post(`${API_URL}/api/newsletter/subscribe`, {
+//         email: newsletterEmail
+//       });
+
+//       if (response.data.success) {
+//         setNewsletterMessage({
+//           text: '✅ Successfully subscribed! You\'ll receive updates in your inbox.',
+//           type: 'success'
+//         });
+//         setNewsletterEmail('');
+//       }
+//     } catch (error) {
+//       const errorMsg = error.response?.data?.message || 'Failed to subscribe. Please try again.';
+//       setNewsletterMessage({ text: `❌ ${errorMsg}`, type: 'error' });
+//     } finally {
+//       setNewsletterLoading(false);
+//     }
+//   };
+
 //   // ---------- Static data ----------
 //   const categories = [
-
 //     {
 //       name: "Modern Flats",
 //       count: propertyCounts.flat || 0,
@@ -237,7 +262,6 @@
 //     },
 //   ];
 
-//   // ---------- Render ----------
 //   return (
 //     <div className={s.bgMain}>
 //       <Navbar />
@@ -445,7 +469,7 @@
 //         </div>
 //       </section>
 
-//       {/* == FEATURED COLLECTIONS == */}
+//       {/* Featured Collections */}
 //       <section className={s.featuredSection}>
 //         <div className={s.container}>
 //           <div className={`${s.featuredHeader} text-center flex flex-col items-center`}>
@@ -536,14 +560,14 @@
 //               <h4 className={s.footerHeading}>Support</h4>
 //               <ul className={s.footerLinks}>
 //                 <li className={s.contactInfo}>
-//                   <HiMail className="text-primary text-xl" /> contact@reestate.com
+//                   <HiMail className="text-primary text-xl" /> contact@realestate.com  {/* ✅ FIXED */}
 //                 </li>
 //                 <li className={s.contactInfo}>
-//                   <HiPhone className="text-primary text-xl" /> +91 1234567890
+//                   <HiPhone className="text-primary text-xl" /> +91 98765 43210  {/* ✅ CHANDIGARH NUMBER */}
 //                 </li>
 //                 <li className={s.contactInfoStart}>
 //                   <HiLocationMarker className={`text-primary ${s.contactIcon}`} />
-//                   123 Business Hub, India
+//                   Sector 17, Chandigarh, India  {/* ✅ UPDATED */}
 //                 </li>
 //               </ul>
 //             </div>
@@ -554,14 +578,31 @@
 //                 Subscribe to get the latest listings and market insights directly
 //                 in your inbox.
 //               </p>
-//               <div className={s.newsletterInputWrapper}>
+//               <form onSubmit={handleNewsletterSubmit} className={s.newsletterInputWrapper}>
 //                 <input
 //                   type="email"
 //                   placeholder="Enter your email"
 //                   className={s.newsletterInput}
+//                   value={newsletterEmail}
+//                   onChange={(e) => setNewsletterEmail(e.target.value)}
+//                   disabled={newsletterLoading}
+//                   required
 //                 />
-//                 <button className={s.newsletterButton}>Join</button>
-//               </div>
+//                 <button
+//                   type="submit"
+//                   className={s.newsletterButton}
+//                   disabled={newsletterLoading}
+//                 >
+//                   {newsletterLoading ? '...' : 'Join'}
+//                 </button>
+//               </form>
+//               {newsletterMessage.text && (
+//                 <div className={`mt-2 text-xs ${
+//                   newsletterMessage.type === 'success' ? 'text-emerald-400' : 'text-red-400'
+//                 }`}>
+//                   {newsletterMessage.text}
+//                 </div>
+//               )}
 //             </div>
 //           </div>
 
@@ -577,14 +618,9 @@
 //             <div className={s.designCredit}>
 //               <img src={logo} alt="logo" className={s.designLogo} />
 //               <span className="text-text-muted">Design By</span>
-//               <a
-//                 href="https://hexagondigitalservices.com/"
-//                 target="_blank"
-//                 rel="noopener noreferrer"
-//                 className={s.designLink}
-//               >
-//                 Hexagon Digital Service
-//               </a>
+//               <span className={s.designLink}>
+//                 Manoj Thakur  {/* ✅ UPDATED */}
+//               </span>
 //             </div>
 //           </div>
 //         </div>
@@ -594,7 +630,6 @@
 // };
 
 // export default LandingPage;
-
 
 
 import React, { useEffect, useState } from "react";
@@ -630,6 +665,8 @@ const LandingPage = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [propertyType, setPropertyType] = useState("Select Type");
+
+  // ✅ Counts state – ab backend se update hogi
   const [propertyCounts, setPropertyCounts] = useState({
     flat: 0,
     villa: 0,
@@ -644,14 +681,86 @@ const LandingPage = () => {
   const [newsletterLoading, setNewsletterLoading] = useState(false);
   const [newsletterMessage, setNewsletterMessage] = useState({ text: "", type: "" });
 
-  useEffect(() => {
-    fetchProperties();
-    fetchCounts();
-    if (user) {
-      fetchWishlist();
+  // ---------- Fetch Counts (Updated) ----------
+  // const fetchCounts = async () => {
+  //   try {
+  //     const res = await axios.get(`${API_URL}/api/property/counts`);
+  //     console.log("📡 Counts response:", res.data); // Debug ke liye
+
+  //     // Response structure: { success: true, counts: { flat, villa, penthouse, commercial } }
+  //     const data = res.data.counts || res.data;
+  //     setPropertyCounts({
+  //       flat: data.flat || 0,
+  //       villa: data.villa || 0,
+  //       penthouse: data.penthouse || 0,
+  //       commercial: data.commercial || 0,
+  //     });
+  //   } catch (err) {
+  //     console.error("❌ Failed to fetch property counts:", err);
+  //     // Fallback – kuch na kuch dikhao
+  //   }
+  // };
+
+
+  const fetchCounts = async () => {
+    try {
+      // Sabhi properties fetch karo
+      const res = await axios.get(`${API_URL}/api/property`);
+      const allProperties = res.data.properties || res.data || [];
+
+      console.log("🏠 Total properties fetched:", allProperties.length);
+
+      // Ab category ke hisaab se count karo (propertyType aur category dono check karo)
+      const counts = {
+        flat: allProperties.filter(p => {
+          const type = (p.propertyType || p.category || "").toLowerCase();
+          return type.includes('flat') || type.includes('apartment');
+        }).length,
+        villa: allProperties.filter(p => {
+          const type = (p.propertyType || p.category || "").toLowerCase();
+          return type.includes('villa') || type.includes('house');
+        }).length,
+        penthouse: allProperties.filter(p => {
+          const type = (p.propertyType || p.category || "").toLowerCase();
+          return type.includes('penthouse');
+        }).length,
+        commercial: allProperties.filter(p => {
+          const type = (p.propertyType || p.category || "").toLowerCase();
+          return type.includes('commercial') || type.includes('shop') || type.includes('office');
+        }).length,
+      };
+
+      console.log("📊 Counts from frontend:", counts);
+      setPropertyCounts(counts);
+    } catch (err) {
+      console.error("❌ Failed to fetch property counts:", err);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  };
+
+  // ---------- Fetch properties ----------
+  const fetchProperties = async (search = "") => {
+    try {
+      setLoading(true);
+      let url = `${API_URL}/api/property`;
+      if (search) {
+        url += `?city=${encodeURIComponent(search)}`;
+      }
+
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      const res = await axios.get(url, { headers });
+      const data = res.data.properties || res.data || [];
+      setProperties(Array.isArray(data) ? data : []);
+      setError(null);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError("Failed to load properties. Please try again.");
+      setProperties([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ---------- Wishlist ----------
   const fetchWishlist = async () => {
@@ -690,50 +799,6 @@ const LandingPage = () => {
     }
   };
 
-  // ---------- Counts ----------
-  const fetchCounts = async () => {
-    try {
-      const res = await axios.get(`${API_URL}/api/property/counts`);
-      let data = res.data;
-      if (data.success && data.counts) data = data.counts;
-      else if (data.data) data = data.data;
-
-      setPropertyCounts({
-        flat: data.flat || data.Flat || 0,
-        villa: data.villa || data.Villa || 0,
-        penthouse: data.penthouse || data.Penthouse || 0,
-        commercial: data.commercial || data.Commercial || 0,
-      });
-    } catch (err) {
-      console.error("Failed to fetch property counts:", err);
-    }
-  };
-
-  // ---------- Fetch properties ----------
-  const fetchProperties = async (search = "") => {
-    try {
-      setLoading(true);
-      let url = `${API_URL}/api/property`;
-      if (search) {
-        url += `?city=${encodeURIComponent(search)}`;
-      }
-
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-      const res = await axios.get(url, { headers });
-      const data = res.data.properties || res.data || [];
-      setProperties(Array.isArray(data) ? data : []);
-      setError(null);
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setError("Failed to load properties. Please try again.");
-      setProperties([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // ---------- Search handler ----------
   const handleSearch = (e) => {
     e.preventDefault();
@@ -743,15 +808,13 @@ const LandingPage = () => {
     navigate(`/properties?${params.toString()}`);
   };
 
-  // ---------- ✅ Newsletter Subscription Handler ----------
+  // ---------- Newsletter Subscription ----------
   const handleNewsletterSubmit = async (e) => {
     e.preventDefault();
-
     if (!newsletterEmail) {
       setNewsletterMessage({ text: 'Please enter your email address.', type: 'error' });
       return;
     }
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(newsletterEmail)) {
       setNewsletterMessage({ text: 'Please enter a valid email address.', type: 'error' });
@@ -765,7 +828,6 @@ const LandingPage = () => {
       const response = await axios.post(`${API_URL}/api/newsletter/subscribe`, {
         email: newsletterEmail
       });
-
       if (response.data.success) {
         setNewsletterMessage({
           text: '✅ Successfully subscribed! You\'ll receive updates in your inbox.',
@@ -781,7 +843,17 @@ const LandingPage = () => {
     }
   };
 
-  // ---------- Static data ----------
+  // ---------- useEffect ----------
+  useEffect(() => {
+    fetchProperties();
+    fetchCounts(); // ✅ Counts fetch honge
+    if (user) {
+      fetchWishlist();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  // ---------- Static categories (ab counts live honge) ----------
   const categories = [
     {
       name: "Modern Flats",
@@ -832,6 +904,7 @@ const LandingPage = () => {
     },
   ];
 
+  // ---------- Render ----------
   return (
     <div className={s.bgMain}>
       <Navbar />
@@ -931,7 +1004,7 @@ const LandingPage = () => {
           <div className={s.categoryGrid}>
             {categories.map((cat) => (
               <div
-                key={cat.id || cat.type}
+                key={cat.type}
                 className={s.categoryCard}
                 role="button"
                 tabIndex={0}
@@ -1130,14 +1203,14 @@ const LandingPage = () => {
               <h4 className={s.footerHeading}>Support</h4>
               <ul className={s.footerLinks}>
                 <li className={s.contactInfo}>
-                  <HiMail className="text-primary text-xl" /> contact@realestate.com  {/* ✅ FIXED */}
+                  <HiMail className="text-primary text-xl" /> contact@realestate.com
                 </li>
                 <li className={s.contactInfo}>
-                  <HiPhone className="text-primary text-xl" /> +91 98765 43210  {/* ✅ CHANDIGARH NUMBER */}
+                  <HiPhone className="text-primary text-xl" /> +91 98765 43210
                 </li>
                 <li className={s.contactInfoStart}>
                   <HiLocationMarker className={`text-primary ${s.contactIcon}`} />
-                  Sector 17, Chandigarh, India  {/* ✅ UPDATED */}
+                  Sector 17, Chandigarh, India
                 </li>
               </ul>
             </div>
@@ -1189,7 +1262,7 @@ const LandingPage = () => {
               <img src={logo} alt="logo" className={s.designLogo} />
               <span className="text-text-muted">Design By</span>
               <span className={s.designLink}>
-                Manoj Thakur  {/* ✅ UPDATED */}
+                Manoj Thakur
               </span>
             </div>
           </div>

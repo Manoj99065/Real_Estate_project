@@ -51,11 +51,20 @@ const BuyerDashboard = () => {
 
   const handleSupportSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await axios.post(`${API_URL}/api/buyer/support-request`,
-        { message: supportMessage },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    // try {
+    //   await axios.post(`${API_URL}/api/buyer/support-request`,
+    //     { message: supportMessage },
+    //     { headers: { Authorization: `Bearer ${token}` } }
+      // );
+      try {
+        await axios.post(`${API_URL}/api/support/create`,
+          {
+            subject: "Support Request",  // backend mein subject bhi chahiye
+            message: supportMessage,
+            priority: "Medium"           // optional, default 'medium' hai
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
       setSupportSuccess("✅ Your urgent message has been sent to the Admin!");
       setSupportMessage('');
       setTimeout(() => setSupportSuccess(''), 4000);

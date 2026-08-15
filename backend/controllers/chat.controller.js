@@ -38,6 +38,8 @@ export const startChat = async(req, res) => {
 export const getUserChats = async(req, res) => {
     try {
         const userId = req.user._id;
+
+
         const chats = await Chat.find({
                 $or: [{ buyer: userId }, { seller: userId }],
             })

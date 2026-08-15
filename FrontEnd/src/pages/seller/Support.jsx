@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from "../../context/AuthContext";
 import axios from 'axios';
 import API_URL from '../../config';
 import {
@@ -14,7 +14,7 @@ import {
 } from 'react-icons/hi';
 
 const SellerSupport = () => {
-  const { token, user } = useAuth();
+  const { user, token } = useAuth();
 
   const [formData, setFormData] = useState({
     subject: '',
@@ -48,15 +48,53 @@ const SellerSupport = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   setSuccessMsg('');
+  //   setErrorMsg('');
+
+  //   try {
+  //     await axios.post(
+  //       `${API_URL}/api/support`,
+  //       {
+  //         subject: formData.subject,
+  //         message: formData.message,
+  //         priority: formData.priority,
+  //       },
+  //       { headers: { Authorization: `Bearer ${token}` } }
+  //     );
+  //     setSuccessMsg('Your support request has been sent to the Admin team! We will get back to you shortly.');
+  //     setFormData({ subject: '', message: '', priority: 'Medium' });
+
+  //     // Refresh the ticket list
+  //     const res = await axios.get(`${API_URL}/api/support/my-tickets`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+  //     setMyTickets(res.data.tickets || []);
+  //   } catch (err) {
+  //     setErrorMsg(err.response?.data?.message || 'Failed to send message.');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setSuccessMsg('');
     setErrorMsg('');
 
+    // ✅ Check karo token hai ya nahi
+    if (!token) {
+      setErrorMsg('You are not logged in. Please login first.');
+      setLoading(false);
+      return;
+    }
+
     try {
+      // ✅ POST to /api/support/create
       await axios.post(
-        `${API_URL}/api/support`,
+        `${API_URL}/api/support/create`,
         {
           subject: formData.subject,
           message: formData.message,
@@ -64,15 +102,18 @@ const SellerSupport = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       setSuccessMsg('Your support request has been sent to the Admin team! We will get back to you shortly.');
       setFormData({ subject: '', message: '', priority: 'Medium' });
 
-      // Refresh the ticket list
+      // ✅ Refresh ticket list – GET /api/support/my-tickets
       const res = await axios.get(`${API_URL}/api/support/my-tickets`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMyTickets(res.data.tickets || []);
+
     } catch (err) {
+      console.error('Support error:', err);
       setErrorMsg(err.response?.data?.message || 'Failed to send message.');
     } finally {
       setLoading(false);

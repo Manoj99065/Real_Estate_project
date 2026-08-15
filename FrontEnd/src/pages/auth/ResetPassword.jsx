@@ -5,11 +5,12 @@ import { HiEye, HiEyeOff } from 'react-icons/hi';
 import { resetPasswordStyles as s } from '../../assets/dummyStyles';
 import Navbar from '../../components/common/Navbar';
 import API_URL from '../../config';
+import { useAuth } from '../../context/AuthContext'; // ✅ Import added
 
 const ResetPassword = () => {
   const navigate = useNavigate();
-  // 👇 Token comes from the URL path: /reset-password/:token
   const { token } = useParams();
+  const { logout } = useAuth(); // ✅ logout function le lo
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -43,13 +44,14 @@ const ResetPassword = () => {
     }
 
     try {
-      // 👇 POST request with token in URL, password in body
       const response = await axios.post(`${API_URL}/api/auth/reset-password/${token}`, {
         password,
       });
 
       if (response.data.success) {
         setSuccess('Password reset successfully! Redirecting to login...');
+        // ✅ Logout user – so they have to login with new password
+        logout();
         setTimeout(() => navigate('/login'), 3000);
       } else {
         setError(response.data.message || 'Failed to reset password.');
@@ -64,7 +66,7 @@ const ResetPassword = () => {
     }
   };
 
-  // Guard: if token is missing (shouldn't happen if route is correct)
+  // Guard: if token is missing
   if (!token) {
     return (
       <div className={s.container}>

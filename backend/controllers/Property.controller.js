@@ -359,29 +359,75 @@ export const getSellerDashboard = async(req, res) => {
 };
 
 // ==================== PROPERTY COUNTS BY TYPE ====================
+// export const getPropertyCounts = async(req, res) => {
+//     try {
+//         const counts = await Property.aggregate([
+//             { $match: { status: { $in: ["sale", "rent", "sold", "pending"] } } },
+//             { $group: { _id: "$propertyType", count: { $sum: 1 } } },
+//         ]);
+
+//         const formattedCounts = { flat: 0, villa: 0, penthouse: 0, commercial: 0 };
+
+//         if (counts && counts.length > 0) {
+//             counts.forEach((item) => {
+//                 const type = (item._id || "").toLowerCase();
+//                 if (type.includes("flat") || type.includes("apartment")) {
+//                     formattedCounts.flat = item.count;
+//                 } else if (type.includes("villa")) {
+//                     formattedCounts.villa = item.count;
+//                 } else if (type.includes("penthouse")) {
+//                     formattedCounts.penthouse = item.count;
+//                 } else if (type.includes("commercial") || type.includes("shop") || type.includes("office")) {
+//                     formattedCounts.commercial = item.count;
+//                 }
+//             });
+//         }
+
+//         res.json({ success: true, counts: formattedCounts });
+//     } catch (error) {
+//         console.error("❌ /counts endpoint error:", error.message);
+//         res.status(500).json({
+//             success: false,
+//             message: "Internal server error fetching counts",
+//             error: error.message,
+//         });
+//     }
+// };
+
+
 export const getPropertyCounts = async(req, res) => {
     try {
-        const counts = await Property.aggregate([
-            { $match: { status: { $in: ["sale", "rent", "sold", "pending"] } } },
-            { $group: { _id: "$propertyType", count: { $sum: 1 } } },
+        // Dono fields se data lao
+        const [typeCounts, categoryCounts] = await Promise.all([
+            Property.aggregate([
+                { $group: { _id: "$propertyType", count: { $sum: 1 } } }
+            ]),
+            Property.aggregate([
+                { $group: { _id: "$category", count: { $sum: 1 } } }
+            ])
         ]);
 
-        const formattedCounts = { flat: 0, villa: 0, penthouse: 0, commercial: 0 };
+        // Dono ko merge karo
+        const combined = {};
+        [...typeCounts, ...categoryCounts].forEach(item => {
+            const key = (item._id || "").toLowerCase();
+            if (key.includes("flat") || key.includes("apartment")) {
+                combined.flat = (combined.flat || 0) + item.count;
+            } else if (key.includes("villa") || key.includes("house")) {
+                combined.villa = (combined.villa || 0) + item.count;
+            } else if (key.includes("penthouse")) {
+                combined.penthouse = (combined.penthouse || 0) + item.count;
+            } else if (key.includes("commercial") || key.includes("shop") || key.includes("office")) {
+                combined.commercial = (combined.commercial || 0) + item.count;
+            }
+        });
 
-        if (counts && counts.length > 0) {
-            counts.forEach((item) => {
-                const type = (item._id || "").toLowerCase();
-                if (type.includes("flat") || type.includes("apartment")) {
-                    formattedCounts.flat = item.count;
-                } else if (type.includes("villa")) {
-                    formattedCounts.villa = item.count;
-                } else if (type.includes("penthouse")) {
-                    formattedCounts.penthouse = item.count;
-                } else if (type.includes("commercial") || type.includes("shop") || type.includes("office")) {
-                    formattedCounts.commercial = item.count;
-                }
-            });
-        }
+        const formattedCounts = {
+            flat: combined.flat || 0,
+            villa: combined.villa || 0,
+            penthouse: combined.penthouse || 0,
+            commercial: combined.commercial || 0,
+        };
 
         res.json({ success: true, counts: formattedCounts });
     } catch (error) {
