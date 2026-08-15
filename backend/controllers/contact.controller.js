@@ -1,5 +1,5 @@
 import Contact from '../models/contact.model.js';
-import { sendEmail } from '../utils/sendEmail.js';
+import { sendEmail } from '../utils/SendEmail.js';
 
 // Create a new contact message
 export const createContact = async(req, res) => {
