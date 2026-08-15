@@ -1,7 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-
 import http from 'http';
 import { Server } from 'socket.io';
 import { connectDB } from './config/db.js';
@@ -24,7 +23,20 @@ const app = express();
 
 
 // CORS - Localhost ke liye sab allow (403 fix)
-app.use(cors({ origin: true, credentials: true }));
+// app.use(cors({ origin: true, credentials: true }));
+
+app.use(
+    cors({
+        origin: [
+            "https://real-estate-project-livid-one.vercel.app",
+            "http://localhost:5173",
+        ],
+        credentials: true,
+    })
+);
+
+
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
