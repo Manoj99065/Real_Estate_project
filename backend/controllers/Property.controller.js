@@ -2,7 +2,7 @@ import Property from "../models/property.model.js";
 import Inquiry from "../models/inquiry.model.js";
 import jwt from "jsonwebtoken";
 import cloudinary from "../config/cloudinary.js";
-import uploadToCloudinary from "../utils/uploadToCloudinary.js";
+import uploadToCloudinary from "../utils/UploadToCloudinary.js";
 // ---------- NEWSLETTER IMPORTS ----------
 import Newsletter from "../models/Newsletter.model.js";
 import { sendNewsletterEmail } from "../utils/email.js";
