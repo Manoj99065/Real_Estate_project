@@ -83,7 +83,7 @@ import {
     getPropertyDetails,
     getSellerDashboard,
     incrementInterest, // 👈 add this
-} from '../controllers/property.controller.js';
+} from '../controllers/Property.controller.js';
 import { protect, authorize } from '../middleware/auth.middleware.js';
 import upload from '../middleware/upload.middleware.js';
 
