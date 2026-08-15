@@ -6,7 +6,7 @@ import { useAuth } from "./AuthContext";
 import { io } from 'socket.io-client';
 
 // ✅ Add this line – same as you have in ChatMessages
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://real-estate-project-ivvr.onrender.com';
 
 const ChatContext = createContext();
 
