@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { propertiesStyles as s } from "../../assets/dummyStyles";
 import { useAuth } from '../../context/AuthContext';
